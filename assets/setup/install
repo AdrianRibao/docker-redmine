@@ -9,16 +9,17 @@ tar xvf /redmine/setup/redmine-2.5.0.tar.gz --strip=1 -C /redmine
 
 # install gems
 echo 'gem "dalli", "~> 2.7.0"' >> Gemfile
-if [ -d "/redmine/setup/cache" ]; then
-  # offline gem installation
-  mv /redmine/setup/cache vendor/
-  gem install fastercsv -v 1.5.0 --no-ri --no-rdoc
-  gem install yard --no-ri --no-rdoc
-  bundle install --local
-else
-  # online gem installation
- bundle install
-fi
+#if [ -d "/redmine/setup/cache" ]; then
+#  # offline gem installation
+#  mv /redmine/setup/cache vendor/
+#  gem install fastercsv -v 1.5.0 --no-ri --no-rdoc
+#  gem install yard --no-ri --no-rdoc
+#  bundle install --local
+#else
+#  # online gem installation
+# bundle install
+#fi
+bundle install
 
 sudo cat > config/additional_environment.rb << EOF
 config.gem 'dalli'
