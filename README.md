@@ -79,29 +79,58 @@ For the file storage we need to mount a volume at the following location.
 Volumes can be mounted in docker by specifying the **'-v'** option in the docker run command.
 
 ```bash
-mkdir -pv /opt/redmine/files
+mkdir -pv /var/dockervolumes/redmine/files
 docker run -name redmine -d \
-  -v /opt/redmine/files:/redmine/files sameersbn/redmine
+  -v /var/dockervolumes/redmine/files:/redmine/files sameersbn/redmine
 ```
 
 ## Database
 
 Redmine uses a database backend to store its data.
 
-### Internal MySQL Server
-This docker image is configured to use a MySQL database backend. The database connection can be configured using environment variables. If not specified, the image will start a mysql server internally and use it. However in this case, the data stored in the mysql database will be lost if the container is stopped/deleted. To avoid this you should mount a volume at /var/lib/mysql.
+### Internal Sqlite database
+
+By default it uses an internal sqlite database. Please keep in mind that this
+database is ok for testing purposes but it's highly recommended that you run
+either PostgreSQL or MySQL databases in a production environment.
 
 ```bash
-mkdir /opt/redmine/mysql
+mkdir /var/dockervolumes/redmine/sqlite
 docker run -name redmine -d \
-  -v /opt/redmine/files:/redmine/files \
-  -v /opt/redmine/mysql:/var/lib/mysql sameersbn/redmine
+  -v /var/dockervolumes/redmine/files:/redmine/files \
+  -v /var/dockervolumes/redmine/sqlite:/var/redmine/sqlite sameersbn/redmine
 ```
 
 This will make sure that the data stored in the database is not lost when the image is stopped and started again.
 
+#### External PostgreSQL Server
+The image can be configured to use an external PostgreSQL database.
+
+The database configuration should be specified using environment variables while starting the Redmine image.
+
+Before you start the Redmine image create user and database for redmine.
+
+```bash
+sudo -u postgres psql
+CREATE ROLE redmine LOGIN ENCRYPTED PASSWORD 'my_password' NOINHERIT VALID UNTIL 'infinity';
+CREATE DATABASE redmine WITH ENCODING='UTF8' OWNER=redmine;
+```
+
+*Assuming that the PostgreSQL server host is 192.168.1.100*
+
+```bash
+docker run -name redmine -d \
+  -e "DB_TYPE=postgres"
+  -e "DB_HOST=192.168.1.100" -e "DB_NAME=redmine_production" \
+  -e "DB_USER=redmine" -e "DB_PASS=password" \
+  -v /var/dockervolumes/redmine/files:/redmine/files sameersbn/redmine
+```
+
+This will initialize the redmine database and after a couple of minutes your redmine instance should be ready to use.
+
 #### External MySQL Server
-The image can be configured to use an external MySQL database instead of starting a MySQL server internally. The database configuration should be specified using environment variables while starting the Redmine image.
+
+The image can be configured to use an external MySQL database.
 
 Before you start the Redmine image create user and database for redmine.
 
@@ -116,6 +145,7 @@ GRANT SELECT, LOCK TABLES, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER ON
 
 ```bash
 docker run -name redmine -d \
+  -e "DB_TYPE=mysql"
   -e "DB_HOST=192.168.1.100" -e "DB_NAME=redmine_production" \
   -e "DB_USER=redmine" -e "DB_PASS=password" \
   -v /opt/redmine/files:/redmine/files sameersbn/redmine
@@ -169,6 +199,7 @@ docker run -name redmine -d -h redmine.local.host \
 
 Below is the complete list of parameters that can be set using environment variables.
 
+- **DB_TYPE**: The database type: postgres, mysql or sqlite3.
 - **DB_HOST**: The mysql server hostname. Defaults to localhost.
 - **DB_PORT**: The mysql server port. Defaults to 3306.
 - **DB_NAME**: The mysql database name. Defaults to redmine_production
