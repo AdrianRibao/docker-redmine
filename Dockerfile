@@ -24,11 +24,10 @@ RUN apt-get install -y libcurl4-openssl-dev libssl-dev \
 
 RUN apt-get install -y ruby ruby-dev ruby-mysql2 ruby-sqlite3 bundler && apt-get clean
 
-#RUN gem install --no-ri --no-rdoc bundler mysql2
-#RUN gem install --no-ri --no-rdoc bundler sqlite3
 RUN gem install --no-ri --no-rdoc bundler activerecord-postgresql-adapter
 
 ADD assets/ /redmine/
+RUN mkdir -p /var/redmine/sqlite
 RUN chmod 755 /redmine/init /redmine/setup/install && /redmine/setup/install
 
 RUN gem install --no-ri --no-rdoc unicorn
