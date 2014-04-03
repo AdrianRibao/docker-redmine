@@ -148,7 +148,7 @@ docker run -name redmine -d \
   -e "DB_TYPE=mysql"
   -e "DB_HOST=192.168.1.100" -e "DB_NAME=redmine_production" \
   -e "DB_USER=redmine" -e "DB_PASS=password" \
-  -v /opt/redmine/files:/redmine/files sameersbn/redmine
+  -v /var/dockervolumes/redmine/files:/redmine/files sameersbn/redmine
 ```
 
 This will initialize the redmine database and after a couple of minutes your redmine instance should be ready to use.
@@ -166,7 +166,7 @@ The following environment variables need to be specified to get mail support to 
 ```bash
 docker run -name redmine -d \
   -e "SMTP_USER=USER@gmail.com" -e "SMTP_PASS=PASSWORD" \
-  -v /opt/redmine/files:/redmine/files sameersbn/redmine
+  -v /var/dockervolumes/redmine/files:/redmine/files sameersbn/redmine
 ```
 
 If you are not using google mail, then please configure the  SMTP host and port using the SMTP_HOST and SMTP_PORT configuration parameters.
@@ -179,18 +179,18 @@ I have only tested standard gmail and google apps login. I expect that the curre
 
 ```bash
 docker run -name redmine -d -h redmine.local.host \
-  -v /opt/redmine/files:/redmine/files \
-  -v /opt/redmine/mysql:/var/lib/mysql \
+  -v /var/dockervolumes/redmine/files:/redmine/files \
+  -v /var/dockervolumes/redmine/sqlite:/var/redmine/sqlite sameersbn/redmine
   -e "SMTP_USER=USER@gmail.com" -e "SMTP_PASS=PASSWORD" \
   sameersbn/redmine
 ```
 
-If you are using an external mysql database
+If you are using an external database
 
 ```bash
 docker run -name redmine -d -h redmine.local.host \
-  -v /opt/redmine/files:/redmine/files \
-  -e "DB_HOST=192.168.1.100" -e "DB_NAME=redmine_production" -e "DB_USER=redmine" -e "DB_PASS=password" \
+  -v /var/dockervolumes/redmine/files:/redmine/files \
+  -e "DB_TYPE=postgres" -e "DB_HOST=192.168.1.100" -e "DB_NAME=redmine_production" -e "DB_USER=redmine" -e "DB_PASS=password" \
   -e "SMTP_USER=USER@gmail.com" -e "SMTP_PASS=PASSWORD" \
   sameersbn/redmine
 ```
@@ -200,21 +200,17 @@ docker run -name redmine -d -h redmine.local.host \
 Below is the complete list of parameters that can be set using environment variables.
 
 - **DB_TYPE**: The database type: postgres, mysql or sqlite3.
-- **DB_HOST**: The mysql server hostname. Defaults to localhost.
-- **DB_PORT**: The mysql server port. Defaults to 3306.
-- **DB_NAME**: The mysql database name. Defaults to redmine_production
-- **DB_USER**: The mysql database user. Defaults to root
-- **DB_PASS**: The mysql database password. Defaults to no password
-- **DB_POOL**: The mysql database connection pool count. Defaults to 5.
+- **DB_HOST**: The server hostname. Defaults to localhost.
+- **DB_PORT**: The server port. Defaults to 3306.
+- **DB_NAME**: The database name. Defaults to redmine_production
+- **DB_USER**: The database user. Defaults to root
+- **DB_PASS**: The database password. Defaults to no password
+- **DB_POOL**: The database connection pool count. Defaults to 5.
 - **MEMCACHED_SIZE**: The local memcached size in Mb. Defaults to 64. Disabled if '0'.
 - **SMTP_HOST**: SMTP server host. Defaults to smtp.gmail.com.
 - **SMTP_PORT**: SMTP server port. Defaults to 587.
 - **SMTP_USER**: SMTP username.
 - **SMTP_PASS**: SMTP password.
-- **PASSENGER_MAX_POOL_SIZE**: PassengerMaxPoolSize (default: 6)
-- **PASSENGER_MIN_INSTANCES**: PassengerMinInstances (default: 1)
-- **PASSENGER_MAX_REQUESTS**: PassengerMaxRequests (default: 0)
-- **PASSENGER_POOL_IDLE_TIME**: PassengerPoolIdleTime (default: 300)
 
 ## Maintenance
 
